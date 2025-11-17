@@ -1,0 +1,1 @@
+Ödev Video Linki : https://youtu.be/KZeIEiBrT_w?si=VuTDMG2nsTv5nKqH
