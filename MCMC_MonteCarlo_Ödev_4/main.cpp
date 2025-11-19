@@ -141,9 +141,6 @@ int main()
         }
         printf("\n\r");
     }
-    // ---------------------------
-    // 2) X’LERY TAHMYN ETME
-    // ---------------------------
 
     char det[MAXLEN];
     char mc[MAXLEN];
@@ -157,11 +154,12 @@ int main()
     int last_det = -1;
     int last_mc  = -1;
 
-    for(int i=0;i<n_rev;i++){
+    for(int i=0;i<n_rev;i++)
+    {
         int c = idx(noisy[i]);
 
         if(c >= 0){
-            // gerçek nükleotid
+            // Ger�ek n�kleoit
             last_det = c;
             last_mc  = c;
 
@@ -205,14 +203,10 @@ int main()
         last_mc = sampled;
     }
 
-    // ---------------------------
-    // 3) FASTA YAZDIR
-    // ---------------------------
-
-    FILE *fd = fopen("deterministic_corrected.fasta","w");
+    FILE *fd = fopen("markov_corrected.fasta","w");
     FILE *fm = fopen("montecarlo_corrected.fasta","w");
 
-    fprintf(fd,">Deterministic\n");
+    fprintf(fd,">Markov\n");
     fprintf(fm,">MonteCarlo\n");
 
     int col = 0;
@@ -235,7 +229,7 @@ int main()
     // ---------------------------
     // 4) HISTOGRAM
     // ---------------------------
-    printf("=== DETERMINISTIC HISTOGRAM ===\n");
+    printf("=== Markov HISTOGRAM ===\n");
     printf("A: %ld\nG: %ld\nT: %ld\nC: %ld\n",hist_det[0], hist_det[1], hist_det[2], hist_det[3]);
 
     printf("\n=== MONTE CARLO HISTOGRAM ===\n");
@@ -252,8 +246,7 @@ int main()
     compute_pmf(hist_det, total_det, pmf_det);
     compute_pmf(hist_mc,  total_mc,  pmf_mc);
 
-    // Ekrana yazdır
-    print_pmf(pmf_det, "Deterministic");
+    print_pmf(pmf_det, "Markov");
     print_pmf(pmf_mc,  "Monte Carlo");
 
     system("pause");
