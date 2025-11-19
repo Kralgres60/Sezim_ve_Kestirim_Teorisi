@@ -3,60 +3,55 @@
 
 #define LEN 1000
 
-/*Function Prototypes*/
+// Fonksiyon prototipleri
 char Base(double v[]);
 void ExtractProb(const char *s, double M[4][4]);
-/*Function Prototypes*/
 
-
-int main() 
-{
-    // Gene Squences FASTA Code from NCBI Database
-    FILE *fptr = fopen("gene_rev.txt", "r");
-
-    if (fptr == NULL)
-    {
-       return 1;
-    }
-
-
+int main() {
     double M[4][4] = 
     {
-        {0.364, 0.209, 0.295, 0.133},
-        {0.329, 0.209, 0.283, 0.179},
-        {0.250, 0.216, 0.365, 0.169},
-        {0.382, 0.038, 0.384, 0.197}
+        {0.364 ,0.209 ,0.295 ,0.133},
+        {0.329 ,0.209 ,0.283 ,0.179},
+        {0.250 ,0.216 ,0.365 ,0.169},
+        {0.382 ,0.038 ,0.384 ,0.197}
     };
-    
+
     double v[4];
-   
-    //First Distribution
-    v[0] = 1;   // A
-    v[1] = 0;   // T
-    v[2] = 0;   // G
-    v[3] = 0;   // C
+    char b;
+    
+    // Gene Squences FASTA Code from NCBI Database
+    char ch;
+    FILE *fptr = fopen("gene_rev.txt", "r");
 
-    char ch = 0;
-
-
-    // Karakter bazinda okuma ve siniflama
     while ((ch = fgetc(fptr)) != EOF)
-    {
+    { 
         if (ch == 'A')
         {
-            v[0]=1;v[1]=v[2]=v[3]=0;
-        }
-        else if (ch == 'T')
-        {
-           v[1]=1; v[0]=v[2]=v[3]=0;
+            v[0] = 1;   // A
+            v[1] = 0;   // T
+            v[2] = 0;   // G
+            v[3] = 0;   // C
         }
         else if (ch == 'G')
         {
-            v[2]=1; v[0]=v[1]=v[3]=0;
+            v[0] = 0;   // A
+            v[1] = 1;   // T
+            v[2] = 0;   // G
+            v[3] = 0;   // C
+        }
+        else if (ch == 'T')
+        {
+            v[0] = 0;   // A
+            v[1] = 0;   // T
+            v[2] = 1;   // G
+            v[3] = 0;   // C
         }
         else if (ch == 'C')
         {
-            v[3]=1; v[0]=v[1]=v[2]=0;
+            v[0] = 0;   // A
+            v[1] = 0;   // T
+            v[2] = 0;   // G
+            v[3] = 1;   // C
         }
         else if (ch == 'X')
         {
@@ -65,21 +60,22 @@ int main()
             double z = (v[0]*M[0][2])+(v[1]*M[1][2])+(v[2]*M[2][2])+(v[3]*M[3][2]);
             double w = (v[0]*M[0][3])+(v[1]*M[1][3])+(v[2]*M[2][3])+(v[3]*M[3][3]);
 
-            double vector[4] = {x,y,z,w};
-            char corrected_word = Base(vector);
+            v[0] = x;
+            v[1] = y;
+            v[2] = z;
+            v[3] = w;
 
-            printf("predicted word = %c \r\n",corrected_word);
+            b = Base(v);
+
+            printf("predicted word = %c \r\n",b);
         }
     }
 
-    fclose(fptr);
     return 0;
 }
 
-
-/*chosing the greater probabilty number*/
-char Base(double v[]) 
-{
+// En büyük olasýlýðý seçen fonksiyon
+char Base(double v[]) {
     int max_index = 0;
     double max_val = v[0];
 
@@ -91,17 +87,16 @@ char Base(double v[])
     }
 
     if (max_index == 0) return 'A';
-    if (max_index == 1) return 'T';
-    if (max_index == 2) return 'G';
+    if (max_index == 1) return 'G';
+    if (max_index == 2) return 'T';
     return 'C';
 }
 
-// Extract transition matrix from DNA
-void ExtractProb(const char *s, double M[4][4]) 
-{
+// DNA dizisinden geçiþ matrisi çýkarma fonksiyonu
+void ExtractProb(const char *s, double M[4][4]) {
     int len = strlen(s);
     
-    /*reset matrix*/
+    // Matris sýfýrla
     for (int i = 0; i < 4; i++)
         for (int j = 0; j < 4; j++)
             M[i][j] = 0;
@@ -127,7 +122,7 @@ void ExtractProb(const char *s, double M[4][4])
         M[r][c] += 1;
     }
 
-    // normalizing
+    // Normalize et (her satýrý toplam frekansa böl)
     for (int i = 0; i < 4; i++) {
         double total = (i==0?Ta : i==1?Tt : i==2?Tg : Tc);
 
