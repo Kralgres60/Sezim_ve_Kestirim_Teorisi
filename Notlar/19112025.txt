@@ -1,0 +1,7 @@
+
+
+-> Ödev-4 aslında gene_rev.txt dosyasında x'e denk gelince x'ten önce bir silence belirlenmeli yani önceki sequence'den kaç tane byte okunacağı belirlenmelidir. Bundan sonra o sequence'e ait geçiş matrisi oluşturulmalı sonrasında kitaptaki mantıktan ilerlenmelidir. Inverse transform kodu hocanın verdiğinde bayağı önemli. Yani hocanın verdiği gene.txt ve main.c koduna gerek yok.
+
+
+
+-> 4 farklı transition slice. Inverse transform sampler ile yapılacak.
