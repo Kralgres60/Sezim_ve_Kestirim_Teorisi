@@ -233,7 +233,8 @@ int main() {
 
     fptr = fopen("gene_histg.txt", "w+"); //proje klasorunde
     
-    for(j = 0; j < NumberOfNA; j++){
+    for(j = 0; j < NumberOfNA; j++)
+    {
         
         printf("%s %.3f\n\r", NADef[j], NAHist[j]);
         sprintf(str,"%s %.3f\n", NADef[j], NAHist[j]);  

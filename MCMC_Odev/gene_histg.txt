@@ -1,0 +1,16 @@
+Silence = 8 	 Ade: = 2.00 	 Gua = 2.00 	 Thy = 4.00 	 Cyt = 0.00 
+Silence = 8 	 Ade: = 5.00 	 Gua = 1.00 	 Thy = 2.00 	 Cyt = 0.00 
+Silence = 8 	 Ade: = 4.00 	 Gua = 1.00 	 Thy = 3.00 	 Cyt = 0.00 
+Silence = 8 	 Ade: = 4.00 	 Gua = 0.00 	 Thy = 4.00 	 Cyt = 0.00 
+Silence = 8 	 Ade: = 1.00 	 Gua = 5.00 	 Thy = 2.00 	 Cyt = 0.00 
+Silence = 8 	 Ade: = 1.00 	 Gua = 2.00 	 Thy = 4.00 	 Cyt = 1.00 
+Silence = 8 	 Ade: = 3.00 	 Gua = 3.00 	 Thy = 1.00 	 Cyt = 1.00 
+Silence = 8 	 Ade: = 2.00 	 Gua = 1.00 	 Thy = 4.00 	 Cyt = 1.00 
+Silence = 8 	 Ade: = 0.00 	 Gua = 0.00 	 Thy = 6.00 	 Cyt = 2.00 
+Silence = 8 	 Ade: = 4.00 	 Gua = 0.00 	 Thy = 1.00 	 Cyt = 3.00 
+Silence = 8 	 Ade: = 2.00 	 Gua = 1.00 	 Thy = 4.00 	 Cyt = 1.00 
+Silence = 8 	 Ade: = 3.00 	 Gua = 2.00 	 Thy = 2.00 	 Cyt = 1.00 
+Silence = 8 	 Ade: = 5.00 	 Gua = 0.00 	 Thy = 1.00 	 Cyt = 2.00 
+Silence = 8 	 Ade: = 3.00 	 Gua = 1.00 	 Thy = 4.00 	 Cyt = 0.00 
+Silence = 8 	 Ade: = 0.00 	 Gua = 0.00 	 Thy = 6.00 	 Cyt = 2.00 
+Silence = 8 	 Ade: = 6.00 	 Gua = 1.00 	 Thy = 1.00 	 Cyt = 0.00 

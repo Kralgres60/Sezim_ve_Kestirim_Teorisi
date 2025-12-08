@@ -4,12 +4,13 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <time.h>
 
 /*print out the character from input file*/
 //#define PRINT_TRANSITION_MATRIX
 
-#define FILE_NAME "gene_rev.txt"
-
+#define FILE_NAME               "gene_rev.txt"
+#define UNKNOWN_WORD_NUMBERS    16
 
 
 //Nucleic Acids
@@ -32,6 +33,8 @@ double 	StateHist[4][4] 	= {0};
 int 	StPrDist[4] 		= {0}; 
 
 
+
+const char unknownNucleicAcids[UNKNOWN_WORD_NUMBERS] = {'G','A','T','A','G','A','T','A','T','A','A','A','A','T','T','A'};
 /* 
 Nucleic Acid Codes in FASTA File
 A   Ade Adenine
@@ -39,6 +42,31 @@ G   Gua Guanine
 T   Thy Thymine
 C   Cyt Cytosine
 */
+
+void create_histogram(int silenceNum)
+{
+    FILE *fptr;
+    char str[10];
+
+    fptr = fopen("gene_histg.txt", "w+"); //proje klasorunde
+    
+    for(int j = 0; j < NumberOfNA; j++)
+    {
+        
+        printf("%s %.3f\n\r", NADef[j], NAHist[j]);
+        sprintf(str,"%s %.3f\n", NADef[j], NAHist[j]);  
+        for(int t = 0; t < 10; t++){
+            if(str[t]!=0){
+                putc(str[t],fptr);
+            }
+            else{
+                break;
+            }
+        }
+    }  
+    // dosya kapama
+    fclose(fptr);
+}
 
 
 long int findSize(const char file_name[])
@@ -64,9 +92,9 @@ long int findSize(const char file_name[])
 }
 
 /*Random Number Generator*/
-float get_random(void)
+double get_random(void)
 {
-    float  r_num = (float)rand()/RAND_MAX;
+    double  r_num = (double)rand()/RAND_MAX;
     return r_num;
 }
 
@@ -75,9 +103,10 @@ float get_random(void)
 */
 int it_sampler(int NACode){
     
+
     int m, tr_value = 0;
-    float u = 0.0f;
-    float lc,hc;
+    double u = 0.0f;
+    double lc,hc;
 
     u = get_random(); //0-1 arasi rastgele sayi
     
@@ -107,14 +136,12 @@ int it_sampler(int NACode){
 }
 
 
-
-
-
 void calculate_transition_matrix(const char* array,uint32_t length)
 {
 
     /*reset Elemenets*/
     memset(NAHist,0x00,sizeof(NAHist));
+
     for (int i = 0; i < NumberOfNA; ++i)
     {
        for (int j = 0; j < NumberOfNA; ++j)
@@ -221,9 +248,6 @@ void calculate_transition_matrix(const char* array,uint32_t length)
     }     
 
 
-
-
-
     /*Transition Matrix Calculation*/
     double t_cnt = 0.0f, s_cnt = 0.0f;
 
@@ -233,7 +257,11 @@ void calculate_transition_matrix(const char* array,uint32_t length)
         {
             t_cnt           = StateHist[i][j];
             s_cnt           = NAHist[i];
-            TrMatrix[i][j]  = t_cnt / s_cnt;
+
+            if (s_cnt == 0)
+                TrMatrix[i][j]  = 0.0f;
+            else
+                TrMatrix[i][j]  = static_cast<double>(t_cnt / s_cnt);
         }
     }
 
@@ -259,7 +287,8 @@ void calculate_transition_matrix(const char* array,uint32_t length)
 
 int main(int argc, char** argv) 
 {
-	
+	srand(time(NULL));
+
     uint32_t fileSize = findSize(FILE_NAME); 
 
     if (fileSize == -1)
@@ -271,6 +300,7 @@ int main(int argc, char** argv)
     {
         printf("File Size = %i \r\n",fileSize);
     }
+
     // Gene Squences FASTA Code from NCBI Database
     FILE *fptr = fopen(FILE_NAME, "r");
 
@@ -290,6 +320,8 @@ int main(int argc, char** argv)
         return 1;
     }
 
+
+
     /*Copy Process*/
     for (int i = 0; i < fileSize; ++i)
     {
@@ -305,47 +337,104 @@ int main(int argc, char** argv)
     // Close File
     fclose(fptr);
 
+    char *fileParsedData = new char[fileSize];
 
-    /*Find the X and Calculate Transition Matrix*/
+    if (!fileParsedData)
+    {
+        printf("insufficient Memory for Parsed File Data\r\n");
+        return 1;
+    }
+    memset(fileParsedData,0x00,fileSize);
 
-    const uint32_t SliceLength = 20; 
 
-    char prev = 0;
-   
+
+    uint32_t realSize = 0;
+
     for (int i = 0; i < fileSize; ++i)
     {
-        char c = fileData[i];
+        const char c = fileData[i];
 
-        if (c == 'X')
+        if (c == 'X' || c == 'A' || c == 'T' || c == 'G' || c == 'C')
         {
-            uint16_t index = static_cast<uint16_t>(i - SliceLength);
+            fileParsedData[realSize++] = c;
+        }
+    }
 
-            if (index != 0)
+    printf("Real File Size = %i \r\n",realSize);
+
+    /*deallocate memory*/
+    delete[] fileData;
+
+
+    fptr = fopen("gene_histg.txt", "w+"); //proje klasorunde
+    char str[256];
+
+    /*Find the X and Calculate Transition Matrix*/
+    const uint32_t SliceLength             = 4; 
+    const uint32_t sliceNums[4]            = {25,50,75,100};
+
+
+    for (int i = 0; i < SliceLength; ++i)
+    {
+        char prev = 0;
+        
+        char predictedWords[UNKNOWN_WORD_NUMBERS];
+        uint16_t predictedWordNumbers = 0;
+    
+    
+    
+        for (int i = 0; i < realSize; ++i)
+        {
+            char c = fileParsedData[i];
+    
+    
+            if (c == 'X')
             {
-
-               calculate_transition_matrix(reinterpret_cast<const char*>(&fileData[index]),SliceLength - 1);
-
-             
-               /*Find the last letter*/
-               for (int j = 0; j < NumberOfNA; ++j)
-               {
-                   if (prev == NucleicAcids[j])
+                uint16_t index = static_cast<uint16_t>(i - sliceNums[SliceLength]);
+    
+                if (index != 0)
+                {
+    
+                   calculate_transition_matrix(reinterpret_cast<const char*>(&fileParsedData[index]),sliceNums[SliceLength]);
+    
+                   sprintf(str,"Silence = %d \t Ade: = %2.2f \t Gua = %2.2f \t Thy = %2.2f \t Cyt = %2.2f \r\n",sliceNums[SliceLength],NAHist[0],NAHist[1],NAHist[2],NAHist[3]);
+                   fputs(str,fptr);
+    
+                   /*Find the last letter*/
+                   for (int j = 0; j < NumberOfNA; ++j)
                    {
-                       int m = it_sampler(j);
-
-                       if ((0 <= m) && (m < (NumberOfNA)))
+                       if (prev == NucleicAcids[j])
                        {
-                            fileData[i] = NucleicAcids[m];
-                       }   
+                           int m = it_sampler(j);
+    
+                            fileParsedData[i] = NucleicAcids[m];
+                            c = NucleicAcids[m];
+                            predictedWords[predictedWordNumbers++] = c;
+                       }
                    }
-               }
-
-               printf("Predicted Word = %c \r\n",fileData[i]);
+                }
+            }
+            prev = c;
+        }
+    
+    
+        printf("predictedWord Numbers = %i \r\n",predictedWordNumbers);
+    
+        int success_rate = 0;
+    
+        for (int i = 0; i < UNKNOWN_WORD_NUMBERS; ++i)
+        {
+            if (unknownNucleicAcids[i] == predictedWords[i])
+            {   
+               success_rate++;
             }
         }
-
-        prev = c;
+    
+        double successPercent = (double)((success_rate / (double)UNKNOWN_WORD_NUMBERS) * 100.0f);
+        printf("Success Rate = %i/%i Success Percent = %2.2f \r\n",success_rate,UNKNOWN_WORD_NUMBERS,successPercent);
     }
+    // dosya kapama
+    fclose(fptr);
 
     /*Create a file*/
     fptr = fopen("gene_fixed.txt", "w+"); 
@@ -353,9 +442,9 @@ int main(int argc, char** argv)
     /*write fixed data*/
     if (fptr != NULL)
     {
-        for (int i = 0; i < fileSize; ++i)
+        for (int i = 0; i < realSize; ++i)
         {
-           fputc(fileData[i],fptr);
+           fputc(fileParsedData[i],fptr);
         }
     }
     else
@@ -363,7 +452,10 @@ int main(int argc, char** argv)
         printf("!!!! Fixed File couldn't create !!!! \r\n");
     }
 
-    /*deallocate memory*/
-    delete[] fileData;
+    // Close File
+    fclose(fptr);
+    
+      /*deallocate memory*/
+    delete[] fileParsedData;
 	return 0;
 }
