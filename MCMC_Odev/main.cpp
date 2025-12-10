@@ -367,72 +367,91 @@ int main(int argc, char** argv)
 
 
     fptr = fopen("gene_histg.txt", "w+"); //proje klasorunde
-    char str[256];
+    char str[512];
 
     /*Find the X and Calculate Transition Matrix*/
     const uint32_t SliceLength             = 4; 
     const uint32_t sliceNums[4]            = {25,50,75,100};
 
 
-    for (int i = 0; i < SliceLength; ++i)
+
+    char prev = 0;
+    
+    char predictedWords[UNKNOWN_WORD_NUMBERS][4];
+
+    int  row    = 0;
+    int  column = 0;
+    uint16_t predictedWordNumbers = 0;
+    
+    
+    for (int j = 0; j < realSize; ++j)
     {
-        char prev = 0;
-        
-        char predictedWords[UNKNOWN_WORD_NUMBERS];
-        uint16_t predictedWordNumbers = 0;
-    
-    
-    
-        for (int i = 0; i < realSize; ++i)
+        char c = fileParsedData[j];
+
+
+        if (c == 'X')
         {
-            char c = fileParsedData[i];
-    
-    
-            if (c == 'X')
+            column = 0;
+            for (int s = 0; s < SliceLength; ++s)
             {
-                uint16_t index = static_cast<uint16_t>(i - sliceNums[SliceLength]);
-    
-                if (index != 0)
+                uint32_t silence  = sliceNums[s];
+
+                if (j >= silence )
                 {
-    
-                   calculate_transition_matrix(reinterpret_cast<const char*>(&fileParsedData[index]),sliceNums[SliceLength]);
-    
-                   sprintf(str,"Silence = %d \t Ade: = %2.2f \t Gua = %2.2f \t Thy = %2.2f \t Cyt = %2.2f \r\n",sliceNums[SliceLength],NAHist[0],NAHist[1],NAHist[2],NAHist[3]);
-                   fputs(str,fptr);
-    
+                    uint32_t index = j - silence;
+                    // Transition matrix hesapla
+                    calculate_transition_matrix(&fileParsedData[index], silence);
+                    // Histogram dosyasına yaz
+                    sprintf(str,"X index=%u  Silence=%u \t Ade=%2.2f \t Gua=%2.2f \t Thy=%2.2f \t Cyt=%2.2f \n", j, silence, NAHist[0], NAHist[1], NAHist[2], NAHist[3]);
+                    fputs(str, fptr);
+
                    /*Find the last letter*/
-                   for (int j = 0; j < NumberOfNA; ++j)
-                   {
-                       if (prev == NucleicAcids[j])
-                       {
-                           int m = it_sampler(j);
-    
-                            fileParsedData[i] = NucleicAcids[m];
-                            c = NucleicAcids[m];
-                            predictedWords[predictedWordNumbers++] = c;
-                       }
-                   }
+                    for (int k = 0; k < NumberOfNA; ++k)
+                    {
+                        if (prev == NucleicAcids[k])
+                        {
+                            int m = it_sampler(k);
+        
+                             //fileParsedData[j] = NucleicAcids[m];
+                             char predicted = NucleicAcids[m];
+
+                             //predictedWords[predictedWordNumbers++] = predicted;
+                             predictedWords[row][column++] = predicted;
+                        }
+                    }
                 }
+
             }
-            prev = c;
+            row++;
         }
-    
-    
-        printf("predictedWord Numbers = %i \r\n",predictedWordNumbers);
-    
-        int success_rate = 0;
-    
-        for (int i = 0; i < UNKNOWN_WORD_NUMBERS; ++i)
-        {
-            if (unknownNucleicAcids[i] == predictedWords[i])
-            {   
-               success_rate++;
-            }
-        }
-    
-        double successPercent = (double)((success_rate / (double)UNKNOWN_WORD_NUMBERS) * 100.0f);
-        printf("Success Rate = %i/%i Success Percent = %2.2f \r\n",success_rate,UNKNOWN_WORD_NUMBERS,successPercent);
+
+        
+        prev = c;
     }
+    
+#if 1
+    int success_rate[4]= {0};
+
+    for (int i = 0; i < 4; ++i)
+    {
+        for (int j = 0; j < UNKNOWN_WORD_NUMBERS; ++j)
+        {
+            if (unknownNucleicAcids[i] == predictedWords[j][i])
+            {
+                success_rate[i]++;
+            }
+        }
+    }
+
+    for (int i = 0; i < 4; ++i)
+    {
+       double successPercent = (double)((success_rate[i] / (double)UNKNOWN_WORD_NUMBERS) * 100.0f);
+        printf("Success Rate = %i/%i Success Percent = %2.2f \r\n",success_rate[i],UNKNOWN_WORD_NUMBERS,successPercent);
+    }
+#endif
+    
+   
+    
     // dosya kapama
     fclose(fptr);
 
