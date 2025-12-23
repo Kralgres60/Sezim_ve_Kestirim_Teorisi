@@ -410,8 +410,8 @@ int main(int argc, char** argv)
                     {
                         if (prev == NucleicAcids[k])
                         {
-                            int m = it_sampler(k);
-        
+                        	int m ;
+                            m = it_sampler(k);
                              //fileParsedData[j] = NucleicAcids[m];
                              char predicted = NucleicAcids[m];
 
