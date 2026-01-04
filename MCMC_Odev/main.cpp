@@ -9,8 +9,14 @@
 /*print out the character from input file*/
 //#define PRINT_TRANSITION_MATRIX
 
+#define ORIGINAL_FILE           "gene.txt"
 #define FILE_NAME               "gene_rev.txt"
+#define HIST_FILE_NAME          "gene_histg.txt"
+#define FIXED_FILE_NAME         "gene_fixed.txt"
 #define UNKNOWN_WORD_NUMBERS    16
+#define MC_ITERATION            10000
+
+
 
 
 //Nucleic Acids
@@ -48,20 +54,22 @@ void create_histogram(int silenceNum)
     FILE *fptr;
     char str[10];
 
-    fptr = fopen("gene_histg.txt", "w+"); //proje klasorunde
+    fptr = fopen(HIST_FILE_NAME, "w+"); //proje klasorunde
     
+    if (fptr == NULL)
+    {
+        printf("%s cannot created",HIST_FILE_NAME);
+        return;
+    }
     for(int j = 0; j < NumberOfNA; j++)
     {
-        
         printf("%s %.3f\n\r", NADef[j], NAHist[j]);
         sprintf(str,"%s %.3f\n", NADef[j], NAHist[j]);  
         for(int t = 0; t < 10; t++){
-            if(str[t]!=0){
+            if(str[t]!=0)
                 putc(str[t],fptr);
-            }
-            else{
+            else
                 break;
-            }
         }
     }  
     // dosya kapama
@@ -287,7 +295,7 @@ void calculate_transition_matrix(const char* array,uint32_t length)
 
 int main(int argc, char** argv) 
 {
-	srand(time(NULL));
+	srand(0);
 
     uint32_t fileSize = findSize(FILE_NAME); 
 
@@ -366,7 +374,7 @@ int main(int argc, char** argv)
     delete[] fileData;
 
 
-    fptr = fopen("gene_histg.txt", "w+"); //proje klasorunde
+    fptr = fopen(HIST_FILE_NAME, "w+"); //proje klasorunde
     char str[512];
 
     /*Find the X and Calculate Transition Matrix*/
@@ -378,6 +386,7 @@ int main(int argc, char** argv)
     char prev = 0;
     
     char predictedWords[UNKNOWN_WORD_NUMBERS][4];
+    memset(predictedWords, 0, sizeof(predictedWords));
 
     int  row    = 0;
     int  column = 0;
@@ -396,7 +405,7 @@ int main(int argc, char** argv)
             {
                 uint32_t silence  = sliceNums[s];
 
-                if (j >= silence )
+                if (j >= silence)
                 {
                     uint32_t index = j - silence;
                     // Transition matrix hesapla
@@ -410,13 +419,28 @@ int main(int argc, char** argv)
                     {
                         if (prev == NucleicAcids[k])
                         {
-                        	int m ;
-                            m = it_sampler(k);
-                             //fileParsedData[j] = NucleicAcids[m];
-                             char predicted = NucleicAcids[m];
 
-                             //predictedWords[predictedWordNumbers++] = predicted;
-                             predictedWords[row][column++] = predicted;
+                            int mc_count[4] = {0};
+
+                            for (int iter  = 0; iter  < MC_ITERATION; ++iter )
+                            {
+                                int m = it_sampler(k);
+                                mc_count[m]++;
+                            }
+                            
+                            int best = 0;
+
+                            for (int n = 0; n < 4; ++n)
+                            {
+                                if (mc_count[n] > mc_count[best])
+                                    best = n;
+                            }
+
+                            //fileParsedData[j] = NucleicAcids[m];
+                            char predicted = NucleicAcids[best];
+
+                            //predictedWords[predictedWordNumbers++] = predicted;
+                            predictedWords[row][column++] = predicted;
                         }
                     }
                 }
@@ -432,13 +456,11 @@ int main(int argc, char** argv)
 #if 1
     int success_rate[4]= {0};
 
-    for (int i = 0; i < 4; ++i)
-    {
-        for (int j = 0; j < UNKNOWN_WORD_NUMBERS; ++j)
-        {
-            if (unknownNucleicAcids[i] == predictedWords[j][i])
-            {
-                success_rate[i]++;
+
+    for (int x = 0; x < UNKNOWN_WORD_NUMBERS; ++x) {     // x: 0..15 (X index)
+        for (int s = 0; s < 4; ++s) {                    // s: 0..3 (silence index)
+            if (predictedWords[x][s] == unknownNucleicAcids[x]) {
+                success_rate[s]++;
             }
         }
     }
@@ -456,20 +478,15 @@ int main(int argc, char** argv)
     fclose(fptr);
 
     /*Create a file*/
-    fptr = fopen("gene_fixed.txt", "w+"); 
+    fptr = fopen(FIXED_FILE_NAME, "w+"); 
 
     /*write fixed data*/
     if (fptr != NULL)
-    {
         for (int i = 0; i < realSize; ++i)
-        {
            fputc(fileParsedData[i],fptr);
-        }
-    }
     else
-    {
         printf("!!!! Fixed File couldn't create !!!! \r\n");
-    }
+    
 
     // Close File
     fclose(fptr);
