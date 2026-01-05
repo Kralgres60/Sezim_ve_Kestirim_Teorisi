@@ -44,9 +44,6 @@ const char unknownNucleicAcids[UNKNOWN_WORD_NUMBERS] = {'G','A','T','A','G','A',
 
 
 
-
-
-
 /* 
 Nucleic Acid Codes in FASTA File
 A   Ade Adenine
@@ -55,35 +52,7 @@ T   Thy Thymine
 C   Cyt Cytosine
 */
 
-void create_histogram(int silenceNum)
-{
-    FILE *fptr;
-    char str[10];
-
-    fptr = fopen(HIST_FILE_NAME, "w+"); //proje klasorunde
-    
-    if (fptr == NULL)
-    {
-        printf("%s cannot created",HIST_FILE_NAME);
-        return;
-    }
-    for(int j = 0; j < NumberOfNA; j++)
-    {
-        printf("%s %.3f\n\r", NADef[j], NAHist[j]);
-        sprintf(str,"%s %.3f\n", NADef[j], NAHist[j]);  
-        for(int t = 0; t < 10; t++){
-            if(str[t]!=0)
-                putc(str[t],fptr);
-            else
-                break;
-        }
-    }  
-    // dosya kapama
-    fclose(fptr);
-}
-
-
-long int findSize(const char file_name[])
+uint32_t findSize(const char file_name[])
 {
     // opening the file in read mode
     FILE* fp = fopen(file_name, "r");
@@ -91,19 +60,20 @@ long int findSize(const char file_name[])
     // checking if the file exist or not
     if (fp == NULL) {
         printf("File Not Found!\n");
-        return -1;
+        return 0;
     }
 
     fseek(fp, 0L, SEEK_END);
 
     // calculating the size of the file
-    long int res = ftell(fp);
+    uint32_t res = ftell(fp);
 
     // closing the file
     fclose(fp);
 
     return res;
 }
+
 
 /*Random Number Generator*/
 double get_random(void)
@@ -112,12 +82,13 @@ double get_random(void)
     return r_num;
 }
 
+
+
 /** 
 * Inverse Transform
 */
-int it_sampler(int NACode){
-    
-
+int it_sampler(int NACode)
+{
     int m, tr_value = 0;
     double u = 0.0f;
     double lc,hc;
@@ -149,10 +120,8 @@ int it_sampler(int NACode){
     return tr_value;
 }
 
-
-void calculate_transition_matrix(const char* array,uint32_t length)
+void reinitializeGlobalParameters()
 {
-
     /*reset Elemenets*/
     memset(NAHist,0x00,sizeof(NAHist));
 
@@ -165,6 +134,11 @@ void calculate_transition_matrix(const char* array,uint32_t length)
        }
     }
     /*reset Elemenets*/
+}
+
+void calculate_transition_matrix(const char* array,uint32_t length)
+{
+    reinitializeGlobalParameters();
 
     char     CurrChar   = 0;
     char     prevChar   = 0;
@@ -296,9 +270,118 @@ void calculate_transition_matrix(const char* array,uint32_t length)
 
 }
 
+/*this function calculates the number of unknown letter numbers*/
+uint32_t calculateUnknownNumbers(const char* buf,const uint32_t fileSize)
+{
+    if (buf == NULL)
+    {
+        printf("!!! buffer is NULL !!! ");
+        return 0;
+    }
+
+    uint32_t tmpCnt = 0;
+
+    for (int i = 0; i < fileSize; ++i)
+    {
+        if (buf[i] == 'X')
+            ++tmpCnt;
+    }
+
+    return tmpCnt;
+}
+
+/*TODO :: This function finds the correct letter comparing the original file*/
+void findCorrectLetter(const char* buf,const uint32_t fileSize)
+{
+    
+}
 
 
 
+#if 0
+/*
+Param[0] -> file Name
+Param[1] -> histogram file name
+Param[2] -> slice length
+Param[3] -> slice Nums
+*/
+
+void estimateUnknownNucleotids(const char file_name[],const char hist_file_name[], const uint32_t SliceLength,const uint32_t sliceNums[])
+{
+    uint32_t fileSize = findSize(file_name); 
+
+    if (fileSize == -1)
+    {
+        printf("%s\n","File is not found");
+        return 1;
+    }
+    else
+    {
+        printf("File Size = %i \r\n",fileSize);
+    }
+
+    // Gene Squences FASTA Code from NCBI Database
+    FILE *fptr = fopen(file_name, "r");
+
+    if (fptr == NULL)
+    {
+        printf("%s\n","File could not open");
+        return;
+    }
+
+    char* fileData = new char[fileSize];
+
+    if (!fileData)
+    {
+        printf("insufficient Memory \r\n");
+        return;
+    }
+
+    /*Copy Process*/
+    for (int i = 0; i < fileSize; ++i)
+    {
+       const char ch = fgetc(fptr);
+
+       if (ch == EOF)
+         break;
+       
+       fileData[i] = ch;
+    }
+
+    // Close File
+    fclose(fptr);
+
+    char *fileParsedData = new char[fileSize];
+
+    if (!fileParsedData)
+    {
+        printf("insufficient Memory for Parsed File Data\r\n");
+        return;
+    }
+
+    memset(fileParsedData,0x00,fileSize);
+
+    uint32_t realSize = 0;
+
+    for (int i = 0; i < fileSize; ++i)
+    {
+        const char c = fileData[i];
+
+        if (c == 'X' || c == 'A' || c == 'T' || c == 'G' || c == 'C')
+        {
+            fileParsedData[realSize++] = c;
+        }
+    }
+
+    /*deallocate memory*/
+    delete[] fileData;
+
+    printf("Real File Size = %i \r\n",realSize);
+
+    fptr = fopen(hist_file_name, "w+"); //proje klasorunde
+    char str[512];
+}
+#endif
 int main(int argc, char** argv) 
 {
 	srand(0);
@@ -374,10 +457,13 @@ int main(int argc, char** argv)
         }
     }
 
-    printf("Real File Size = %i \r\n",realSize);
+
+    
+    printf("Real File Size = %i Unknown = %i \r\n",realSize,calculateUnknownNumbers(fileParsedData,realSize));
 
     /*deallocate memory*/
     delete[] fileData;
+
 
 
     fptr = fopen(HIST_FILE_NAME, "w+"); //proje klasorunde
