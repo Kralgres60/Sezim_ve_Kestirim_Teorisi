@@ -468,7 +468,7 @@ int main(int argc, char** argv)
     for (int i = 0; i < 4; ++i)
     {
        double successPercent = (double)((success_rate[i] / (double)UNKNOWN_WORD_NUMBERS) * 100.0f);
-        printf("Success Rate = %i/%i Success Percent = %2.2f \r\n",success_rate[i],UNKNOWN_WORD_NUMBERS,successPercent);
+        printf("Silece Number: %3i Success Rate = %3i / %3i Success Percent = %2.2f \r\n",sliceNums[i],success_rate[i],UNKNOWN_WORD_NUMBERS,successPercent);
     }
 #endif
     
