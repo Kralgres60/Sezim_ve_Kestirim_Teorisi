@@ -41,6 +41,12 @@ int 	StPrDist[4] 		= {0};
 
 
 const char unknownNucleicAcids[UNKNOWN_WORD_NUMBERS] = {'G','A','T','A','G','A','T','A','T','A','A','A','A','T','T','A'};
+
+
+
+
+
+
 /* 
 Nucleic Acid Codes in FASTA File
 A   Ade Adenine
