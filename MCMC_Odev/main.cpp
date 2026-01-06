@@ -13,6 +13,10 @@
 #define FILE_NAME               "gene_rev.txt"
 #define HIST_FILE_NAME          "gene_histg.txt"
 #define FIXED_FILE_NAME         "gene_fixed.txt"
+
+
+#define MAX_UNKNOWN_WORDS       512
+
 #define UNKNOWN_WORD_NUMBERS    16
 #define MC_ITERATION            10000
 
@@ -290,10 +294,115 @@ uint32_t calculateUnknownNumbers(const char* buf,const uint32_t fileSize)
     return tmpCnt;
 }
 
-/*TODO :: This function finds the correct letter comparing the original file*/
-void findCorrectLetter(const char* buf,const uint32_t fileSize)
+void parseGeneFile(char*const buf,const uint32_t size)
 {
+    if (buf == NULL)
+    {
+        printf("\r\n ERROR :: buffer is NULL !!!\r\n");
+        return;
+    }
+
+    char *tmpBuf = new char[size];
+
     
+    delete[] tmpBuf;
+}
+
+
+
+
+/*TODO :: This function finds the correct letter comparing the original file*/
+void findCorrectLetter(const char originalFile_name[],const char* buf,const uint32_t tmpfileSize)
+{
+    uint32_t fileSize = findSize(originalFile_name);
+
+    if (fileSize == -1)
+    {
+        printf("%s\n","File is not found");
+        return;
+    }
+    else
+    {
+        printf("Original File Size = %i \r\n",fileSize);
+    }
+
+
+    FILE *fptr = fopen(originalFile_name, "r");
+
+    if (fptr == NULL)
+    {
+        printf("%s\n","Original File could not open");
+        return;
+    }
+
+    char* fileData = new char[fileSize];
+
+    if (!fileData)
+    {
+        printf("insufficient Memory \r\n");
+        return;
+    }
+
+    /*Copy Process*/
+    for (int i = 0; i < fileSize; ++i)
+    {
+       char ch = fgetc(fptr);
+
+       if (ch == EOF)
+         break;
+       
+
+       fileData[i] = ch;
+    }
+
+
+
+
+    //!! close file
+    fclose(fptr);
+
+    char *fileParsedData = new char[fileSize];
+
+    if (!fileParsedData)
+    {
+        printf("insufficient Memory for Parsed File Data\r\n");
+        return;
+    }
+    memset(fileParsedData,0x00,fileSize);
+
+    uint32_t realSize = 0;
+
+    for (int i = 0; i < fileSize; ++i)
+    {
+        const char c = fileData[i];
+
+        if (c == 'A' || c == 'T' || c == 'G' || c == 'C')
+        {
+            fileParsedData[realSize++] = c;
+        }
+    }
+    
+    char     unknownWords[MAX_UNKNOWN_WORDS] = {0};
+    uint32_t unknownWordNumbers = 0;
+
+    for (int i = 0; i < tmpfileSize; ++i)
+    {
+        if ((fileParsedData[i] != buf[i]) && (unknownWordNumbers < MAX_UNKNOWN_WORDS))
+        {
+            unknownWords[unknownWordNumbers++] = fileParsedData[i];
+        }
+    }
+
+    /*printf("Unknown Word Numbers = %i \n",unknownWordNumbers);
+
+    for (int i = 0; i < unknownWordNumbers; ++i)
+    {
+       printf("Unknown Word %i. %c \n",i,unknownWords[i]);
+    }*/
+
+    /*deallocate memory*/
+    delete[] fileData;
+    delete[] fileParsedData;
 }
 
 
@@ -384,8 +493,10 @@ void estimateUnknownNucleotids(const char file_name[],const char hist_file_name[
 #endif
 int main(int argc, char** argv) 
 {
+
 	srand(0);
 
+    
     uint32_t fileSize = findSize(FILE_NAME); 
 
     if (fileSize == -1)
@@ -458,7 +569,7 @@ int main(int argc, char** argv)
     }
 
 
-    
+    //findCorrectLetter(ORIGINAL_FILE,fileParsedData,realSize);
     printf("Real File Size = %i Unknown = %i \r\n",realSize,calculateUnknownNumbers(fileParsedData,realSize));
 
     /*deallocate memory*/
@@ -545,7 +656,7 @@ int main(int argc, char** argv)
         prev = c;
     }
     
-#if 1
+
     int success_rate[4]= {0};
 
 
@@ -562,7 +673,7 @@ int main(int argc, char** argv)
        double successPercent = (double)((success_rate[i] / (double)UNKNOWN_WORD_NUMBERS) * 100.0f);
         printf("Silece Number: %3i Success Rate = %3i / %3i Success Percent = %2.2f \r\n",sliceNums[i],success_rate[i],UNKNOWN_WORD_NUMBERS,successPercent);
     }
-#endif
+
     
    
     
