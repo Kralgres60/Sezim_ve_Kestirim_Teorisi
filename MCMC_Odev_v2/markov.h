@@ -10,18 +10,23 @@
 #include <time.h>
 
 
-#define MC_ITERATION            10000
+
 
 class MARKOV
 {
 	public:
 		MARKOV();
-		void estimateNucleotidsInverseTransform();
+		void estimateNucleotidsInverseTransform(const char* fileData,
+                                                const uint32_t fileDataSize,
+                                                const char* silece,
+                                                const uint32_t sileceNumber,
+                                                const uint32_t mcIteration,
+                                                const uint32_t unknownWordNumbers);
 
 
 	private:
 		void 	reinitializeParams();
-		int 	it_sampler(int NACode);
+		int     it_sampler(int NACode,double TrMatrix[4][4]);
 		void 	calculate_transition_matrix(const char* array,uint32_t length);
 
 

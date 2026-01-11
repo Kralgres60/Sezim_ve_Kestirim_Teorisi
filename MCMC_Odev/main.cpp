@@ -5,6 +5,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <time.h>
+#include "util.h"
+
+
+
 
 /*print out the character from input file*/
 //#define PRINT_TRANSITION_MATRIX
@@ -56,35 +60,10 @@ T   Thy Thymine
 C   Cyt Cytosine
 */
 
-uint32_t findSize(const char file_name[])
-{
-    // opening the file in read mode
-    FILE* fp = fopen(file_name, "r");
-
-    // checking if the file exist or not
-    if (fp == NULL) {
-        printf("File Not Found!\n");
-        return 0;
-    }
-
-    fseek(fp, 0L, SEEK_END);
-
-    // calculating the size of the file
-    uint32_t res = ftell(fp);
-
-    // closing the file
-    fclose(fp);
-
-    return res;
-}
 
 
-/*Random Number Generator*/
-double get_random(void)
-{
-    double  r_num = (double)rand()/RAND_MAX;
-    return r_num;
-}
+
+
 
 
 
@@ -274,39 +253,9 @@ void calculate_transition_matrix(const char* array,uint32_t length)
 
 }
 
-/*this function calculates the number of unknown letter numbers*/
-uint32_t calculateUnknownNumbers(const char* buf,const uint32_t fileSize)
-{
-    if (buf == NULL)
-    {
-        printf("!!! buffer is NULL !!! ");
-        return 0;
-    }
 
-    uint32_t tmpCnt = 0;
 
-    for (int i = 0; i < fileSize; ++i)
-    {
-        if (buf[i] == 'X')
-            ++tmpCnt;
-    }
 
-    return tmpCnt;
-}
-
-void parseGeneFile(char*const buf,const uint32_t size)
-{
-    if (buf == NULL)
-    {
-        printf("\r\n ERROR :: buffer is NULL !!!\r\n");
-        return;
-    }
-
-    char *tmpBuf = new char[size];
-
-    
-    delete[] tmpBuf;
-}
 
 
 
@@ -496,85 +445,13 @@ int main(int argc, char** argv)
 
 	srand(0);
 
-    
-    uint32_t fileSize = findSize(FILE_NAME); 
-
-    if (fileSize == -1)
-    {
-        printf("%s\n","File is not found");
-        return 1;
-    }
-    else
-    {
-        printf("File Size = %i \r\n",fileSize);
-    }
-
-    // Gene Squences FASTA Code from NCBI Database
-    FILE *fptr = fopen(FILE_NAME, "r");
-
-    if (fptr == NULL)
-    {
-    	printf("%s\n","File could not open");
-    	return 1;
-    }
 
 
-
-    char* fileData = new char[fileSize];
-
-    if (!fileData)
-    {
-        printf("insufficient Memory \r\n");
-        return 1;
-    }
-
-
-
-    /*Copy Process*/
-    for (int i = 0; i < fileSize; ++i)
-    {
-       char ch = fgetc(fptr);
-
-       if (ch == EOF)
-         break;
-       
-
-       fileData[i] = ch;
-    }
-    
-    // Close File
-    fclose(fptr);
-
+    FILE *fptr;
+    uint32_t fileSize = findSize(FILE_NAME);
     char *fileParsedData = new char[fileSize];
-
-    if (!fileParsedData)
-    {
-        printf("insufficient Memory for Parsed File Data\r\n");
-        return 1;
-    }
-    memset(fileParsedData,0x00,fileSize);
-
-
-
-    uint32_t realSize = 0;
-
-    for (int i = 0; i < fileSize; ++i)
-    {
-        const char c = fileData[i];
-
-        if (c == 'X' || c == 'A' || c == 'T' || c == 'G' || c == 'C')
-        {
-            fileParsedData[realSize++] = c;
-        }
-    }
-
-
-    //findCorrectLetter(ORIGINAL_FILE,fileParsedData,realSize);
-    printf("Real File Size = %i Unknown = %i \r\n",realSize,calculateUnknownNumbers(fileParsedData,realSize));
-
-    /*deallocate memory*/
-    delete[] fileData;
-
+    
+    uint32_t realSize = parseGeneFile(FILE_NAME,fileParsedData,fileSize);
 
 
     fptr = fopen(HIST_FILE_NAME, "w+"); //proje klasorunde

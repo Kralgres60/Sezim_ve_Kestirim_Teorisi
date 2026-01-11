@@ -3,7 +3,7 @@
 
 
 
-#define MC_ITERATION            10000
+
 
 
 
@@ -32,11 +32,7 @@ void MARKOV::estimateNucleotidsInverseTransform()
 }
 
 
-double 	MARKOV::get_random(void)
-{
-	double  r_num = (double)rand()/RAND_MAX;
-	return 	r_num;
-}
+
 
 
 
