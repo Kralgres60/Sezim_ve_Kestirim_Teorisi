@@ -19,6 +19,8 @@ m_NumberOfNA(4)
     memset(m_NAHist,0x00,sizeof(m_NAHist));
     memset(m_StateHist,0x00,sizeof(m_StateHist));
     memset(StPrDist,0x00,sizeof(StPrDist));
+
+    reinitializeParams();
 }
 
 void 	MARKOV::reinitializeParams()
@@ -34,6 +36,7 @@ void 	MARKOV::reinitializeParams()
     }
 }
 
+#if 0
 void    MARKOV::calculate_transition_matrix(const char* array,uint32_t length)
 {
     reinitializeParams();
@@ -167,6 +170,45 @@ void    MARKOV::calculate_transition_matrix(const char* array,uint32_t length)
 #endif
 
 }
+
+#else
+void MARKOV::calculate_transition_matrix(const char* array, uint32_t length)
+{
+    reinitializeParams(); // Matrisleri sıfırlar
+
+    if (length < 2) return;
+
+    // 1. Adım: Geçişleri say (Counts)
+    for (uint32_t i = 0; i < length - 1; ++i) // length - 1: Son karakterden sonra geçiş yok
+    {
+        int row = -1, col = -1;
+        for (int k = 0; k < m_NumberOfNA; ++k) {
+            if (array[i] == m_NucleicAcids[k]) row = k;
+            if (array[i+1] == m_NucleicAcids[k]) col = k;
+        }
+
+        if (row != -1 && col != -1) {
+            m_StateHist[row][col] += 1.0f;
+            m_NAHist[row] += 1.0f; // Bu karakterden kaç kez çıkış yapıldığını say
+        }
+    }
+
+    // 2. Adım: Olasılıkları hesapla (Normalization)
+    for (int i = 0; i < m_NumberOfNA; ++i)
+    {
+        for (int j = 0; j < m_NumberOfNA; ++j)
+        {
+            if (m_NAHist[i] > 0) {
+                m_TrMatrix[i][j] = (double)(m_StateHist[i][j] / m_NAHist[i]);
+            } else {
+                // Eğer bu nükleotidden hiç geçiş yoksa (örneğin sadece 'A'lardan oluşan dizi)
+                // Eşit olasılık verilebilir veya 0 bırakılabilir.
+                m_TrMatrix[i][j] = 0.25f; 
+            }
+        }
+    }
+}
+#endif
 int     MARKOV::it_sampler(int NACode,double TrMatrix[4][4])
 {
     int m, tr_value = 0;
@@ -204,7 +246,8 @@ void MARKOV::estimateNucleotidsInverseTransform(const char* fileData,
                                                 const char* silece,
                                                 const uint32_t sileceNumber,
                                                 const uint32_t mcIteration,
-                                                const uint32_t unknownWordNumbers)
+                                                const uint32_t unknownWordNumbers,
+                                                char* unknownNums)
 {
     int         row    = 0;
     int         column = 0;
@@ -262,10 +305,27 @@ void MARKOV::estimateNucleotidsInverseTransform(const char* fileData,
             }
             row++;
         }
-
-        prev = c;
+        prev = c; 
     }
 
+    int success_rate[sileceNumber]= {0};
+
+
+    for (int x = 0; x < unknownWordNumbers; ++x) {     // x: 0..15 (X index)
+        for (int s = 0; s < sileceNumber; ++s) {       // s: 0..3 (silence index)
+            if (predictedWords[x][s] == unknownNums[x]) 
+            {
+                success_rate[s]++;
+            }
+        }
+    }
+
+    for (int i = 0; i < sileceNumber; ++i)
+    {
+       double successPercent = (double)((success_rate[i] / (double)unknownWordNumbers) * 100.0f);
+        printf(" Success Rate = %3i / %3i Success Percent = %2.2f \r\n",success_rate[i],unknownWordNumbers,successPercent);
+    }
+    //memcpy(predict_words,predictedWords,sizeof(predictedWords));
 }
 
 

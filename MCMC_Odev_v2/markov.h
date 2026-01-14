@@ -21,7 +21,8 @@ class MARKOV
                                                 const char* silece,
                                                 const uint32_t sileceNumber,
                                                 const uint32_t mcIteration,
-                                                const uint32_t unknownWordNumbers);
+                                                const uint32_t unknownWordNumbers,
+                                                char* predict_words);
 
 
 	private:

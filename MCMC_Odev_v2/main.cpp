@@ -5,17 +5,17 @@
 
 #define ORIGINAL_FILE_NAME               "gene.txt"
 #define MODIFIED_FILE_NAME               "gene_rev.txt"
-
-
+#define MC_ITERATION                      10000
+#define SLICE_NUMBER                      4
 
 char*       g_fileData          = NULL;
 char*       g_unknownNums       = NULL;
 uint32_t    g_fileSize          = 0;
 uint32_t    g_unknownNumSize    = 0;
 
-const uint32_t sliceNums[4]            = {25,50,75,100};
+const uint32_t sliceNums[SLICE_NUMBER]     = {10,20,30,40};
 
-#define MC_ITERATION            10000
+
 
 
 int main() 
@@ -45,7 +45,9 @@ int main()
 
     MARKOV markov;
 
-    markov.estimateNucleotidsInverseTransform((const char*)g_fileData,g_fileSize,(const char*)sliceNums,sizeof(sliceNums),MC_ITERATION,g_unknownNumSize);
+    char predicted_words[g_unknownNumSize][SLICE_NUMBER];
+    markov.estimateNucleotidsInverseTransform((const char*)g_fileData,g_fileSize,(const char*)sliceNums,SLICE_NUMBER,MC_ITERATION,g_unknownNumSize,(char*)g_unknownNums);
+
 
 
     delete[] g_unknownNums;

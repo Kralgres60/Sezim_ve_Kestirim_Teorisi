@@ -126,18 +126,13 @@ uint32_t getRealData(char* buf,uint32_t size)
     {
         const char c = buf[i];
 
-        if (c == 'X' || 
-            c == 'A' || 
-            c == 'T' || 
-            c == 'G' || 
-            c == 'C')
-        {
-            temp[realSize++];
-        }
+        if (c == 'X' || c == 'A' || c == 'T' || c == 'G' || c == 'C')
+            temp[realSize++] = c;
     }
 
     
-    memcpy(buf,temp,realSize);
+
+    memcpy(buf,temp,size);
 
     delete[] temp;
 
